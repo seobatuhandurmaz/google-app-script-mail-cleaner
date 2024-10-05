@@ -1,0 +1,53 @@
+// Aynı metinleri tespit edip satırı komple silen Google Apps Script Fonksiyonu by Batuhan Durmaz
+function removeDuplicateTexts(Sheet1) {
+  // Eğer çalışma sayfası ismi belirtilmemişse varsayılan bir isim kullanıyoruz
+  sheetName = 'Sheet1';
+
+  // Çalışma kitabını alıyoruz ve belirtilen çalışma sayfasını seçiyoruz
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  if (!sheet) {
+    throw new Error("Belirtilen çalışma sayfası bulunamadı: " + sheetName);
+  }
+  
+  // B sütunundaki tüm verileri alıyoruz
+  var dataRange = sheet.getRange("B2:B" + sheet.getLastRow());
+  var data = dataRange.getValues();
+  
+  // Benzersiz metinleri takip etmek için bir Set kullanıyoruz
+  var seenTexts = new Set();
+  
+  // Silinecek satırları takip edecek bir dizi oluşturuyoruz
+  var rowsToDelete = [];
+  
+  // Tüm metinleri kontrol ediyoruz
+  for (var i = 0; i < data.length; i++) {
+    var text = data[i][0];
+    
+    // Eğer metin boş değilse
+    if (text !== "") {
+      if (seenTexts.has(text)) {
+        // Aynı metin daha önce görülmüşse, bu satırı silinecekler listesine ekliyoruz
+        rowsToDelete.push(i + 2); // Satır numarası 2'den başladığı için i + 2 kullanıyoruz
+      } else {
+        // Metin yeni ise Set'e ekliyoruz
+        seenTexts.add(text);
+      }
+    }
+  }
+  
+  // Satırları sondan başlayarak siliyoruz ki indeksler kaymasın
+  for (var j = rowsToDelete.length - 1; j >= 0; j--) {
+    sheet.deleteRow(rowsToDelete[j]);
+  }
+}
+
+/*
+Kullanım Talimatları:
+1. Google Sheets dosyanızda üst menüden 'Araçlar' -> 'Komut Dosyası Düzenleyicisi'ne tıklayın.
+2. Açılan Apps Script penceresine yukarıdaki kodu yapıştırın.
+3. Ardından dosyanızı kaydedin ve uygun bir isim verin.
+4. Menüden 'Çalıştır' butonuna tıklayarak 'removeDuplicateTexts' fonksiyonunu çalıştırın.
+   Örnek: removeDuplicateTexts('Sheet1') şeklinde çalışma sayfası ismini belirtin.
+5. İlk kez çalıştırırken Google Sheets bu işleme izin vermenizi isteyebilir, bu yüzden gerekli izinleri onaylayın.
+6. Fonksiyon, B sütunundaki aynı metinleri tespit ederek otomatik olarak silecektir.
+*/
